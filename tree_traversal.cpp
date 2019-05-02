@@ -33,9 +33,45 @@ public:
         *x = *y;
         *y = temp;
     };
-    
-    void balance_lite(int idx)
+
+    void heapify(int idx) 
+    { 
+        int idx_left = left_idx(idx); 
+        int idx_right = right_idx(idx); 
+        int smallest_idx = idx; 
+        if (idx_right >= heap_.size())
+        {
+            if (idx_left >= heap_.size())
+            {
+                return;
+            }
+            else
+            {
+                smallest_idx = idx_left;
+            }
+        }
+        else
+        {
+            if (heap_[idx_left] <= heap_[idx_right])
+            {
+                smallest_idx = idx_left;
+            }
+            else
+            {
+                smallest_idx = idx_right;
+            }
+        }
+        if (heap_[idx] > heap_[smallest_idx])
+        {
+            swap(&heap_[smallest_idx], &heap_[idx]);
+            heapify(smallest_idx);
+        }
+    };
+
+    void insert_key(const int key)
     {
+        heap_.push_back(key);
+        int idx = heap_.size() - 1;
         while (idx != 0 && heap_[parent_idx(idx)] > heap_[idx])
         {
             swap(&heap_[idx], &heap_[parent_idx(idx)]);
@@ -43,51 +79,33 @@ public:
         }
     };
 
-    void balance_heavy(int idx) 
-    { 
-        int idx_left = left_idx(idx); 
-        int idx_right = right_idx(idx); 
-        int smallest_idx = idx; 
-        if (idx_left < heap_.size() && heap_[idx_left] < heap_[idx])
-        {
-            smallest_idx = idx_left; 
-        }
-        if (idx_right < heap_.size() && heap_[idx_right] < heap_[smallest_idx])
-        {
-            smallest_idx = idx_right; 
-        }
-        if (smallest_idx != idx) 
-        { 
-            swap(&heap_[idx], &heap_[smallest_idx]); 
-            balance_heavy(smallest_idx); 
-        } 
-    };
-
-    void insert_key(const int key)
-    {
-        heap_.push_back(key);
-        balance_lite(heap_.size() - 1);
-    };
-
-    bool delete_key(const int key)
+    void delete_key(const int key)
     {
         auto it = std::find_if(heap_.begin(), heap_.end(),
             [key](const int val) { return val == key; });
         if (it != heap_.end())
         {
             const int idx = std::distance(heap_.begin(), it);
-            heap_[idx] = std::numeric_limits<int>::min();
-            balance_lite(idx);
-            delete_min_key();
-            return true;
+            heap_[idx] = heap_.back();
+            if (heap_.size() > 1)
+            {
+                heap_.pop_back();
+                heapify(idx);
+            }
         }
-        return false;
     };
 
     void delete_min_key()
     {       
-        heap_.erase(heap_.begin());
-        balance_heavy(0);
+        if (!heap_.empty())
+        {
+            heap_[0] = heap_.back();
+            if (heap_.size() > 1)
+            {
+                heap_.pop_back();
+                heapify(0);
+            }
+        }
     };
 
     void print()
@@ -116,6 +134,43 @@ public:
     size_t max_nodes_;
 };
 
+enum class KeyManipulation
+{
+    INSERT,
+    DELETE,
+    DELETE_MIN,
+};
+
+void manipulate_keys(const int num_test_keys, const KeyManipulation manipulation, BinaryMinHeap* bmh)
+{
+    int count = 0;
+    while (count < num_test_keys)
+    {
+        const int key = std::rand() % num_test_keys;
+        switch (manipulation)
+        {
+            case KeyManipulation::INSERT:
+                std::cout << key << " ";
+                bmh->insert_key(key);
+                break;
+            case KeyManipulation::DELETE:
+                std::cout << key << " ";
+                bmh->delete_key(key);
+                break;
+            case KeyManipulation::DELETE_MIN:
+                if (key % 10 == 0)
+                {
+                    std::cout << ".";
+                    bmh->delete_min_key();
+                    break;    
+                }
+        }
+        count++;
+    }
+    std::cout << std::endl;
+    bmh->print();
+};
+
 int main()
 {
     int num_test_keys = 50;
@@ -124,32 +179,14 @@ int main()
     BinaryMinHeap bmh(num_test_keys);
 
     // insert keys
-    int count = 0;
-    std::cout << "--------" << std::endl;
-    std::cout << "inserting: ";
-    while (count < num_test_keys)
-    {
-        const int key = std::rand() % num_test_keys;
-        std::cout << key << " ";
-        bmh.insert_key(key);
-        count++;
-    }
-    std::cout << std::endl;
-    bmh.print();
+    std::cout << "*** inserting: ";
+    manipulate_keys(num_test_keys, KeyManipulation::INSERT, &bmh);
 
     // delete keys
-    count = 0;
-    std::cout << "--------" << std::endl;
-    std::cout << "deleting: ";
-    while (count < num_test_keys)
-    {
-        const int key = std::rand() % num_test_keys;
-        if (bmh.delete_key(key))
-        {
-            std::cout << key << " ";
-        }
-        count++;
-    }
-    std::cout << std::endl;
-    bmh.print();
+    std::cout << "*** deleting: ";
+    manipulate_keys(num_test_keys, KeyManipulation::DELETE, &bmh);
+
+    // delete min key
+    std::cout << "*** deleting min: ";
+    manipulate_keys(num_test_keys, KeyManipulation::DELETE_MIN, &bmh);
 }
