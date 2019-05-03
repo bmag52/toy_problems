@@ -1,35 +1,44 @@
 #include <vector>
 #include <cstdlib>
 #include <iostream>
+#include <ctime>
+#include <assert.h>
 
 typedef std::vector<int> DataVector;
 
 void set_data(const int max_size, DataVector* data)
 {
     data->clear();
-    
-    for (size_t i = 0; i < max_size; ++i)
+
+    if (max_size < 50)
     {
-        std::cout << "--";
+        for (size_t i = 0; i < max_size; ++i) { std::cout << "--"; }
+        std::cout << std::endl;
     }
-    std::cout << std::endl;
 
     for (size_t i = 0; i < max_size; ++i)
     {
         const int val = std::rand() % 10;
-        std::cout << val << " ";
+        if (max_size < 50) { std::cout << val << " "; }
         data->push_back(val);
     }
-    std::cout << "random data" << std::endl;
+    if (max_size < 50) { std::cout << "random data" << std::endl; }
 };
 
-void print(const DataVector data, const std::string desc)
+void print_data(const DataVector data, const std::string desc)
 {
-    for (const auto& val : data)
+    if (data.size() < 50)
     {
-        std::cout << val << " ";
+        for (const auto& val : data) { std::cout << val << " "; }
     }
     std::cout << desc << std::endl;
+};
+
+void swap(int* x, int* y)
+{
+    int temp = *x;
+    *x = *y;
+    *y = temp;
 };
 
 void merge(const DataVector left, const DataVector right, DataVector* data)
@@ -134,7 +143,7 @@ void insertion_sort(DataVector* data)
         Node* new_node = new Node((*data)[data->size() - 1]);
         data->pop_back();
 
-        if (new_node->data_ > end_node->data_)
+        if (new_node->data_ >= end_node->data_)
         {
             end_node->next_ = new_node;
             new_node->prev_ = end_node;
@@ -165,30 +174,89 @@ void insertion_sort(DataVector* data)
     }
 };
 
-void quick_sort(DataVector* data)
+int partition(const int lo, const int hi, DataVector* data)
 {
-
+    const int pivot_val = (*data)[hi];
+    int i = lo;
+    for (int j = lo; j < hi; ++j)
+    {
+        if ((*data)[j] < pivot_val) 
+        {
+            swap(&(*data)[i], &(*data)[j]);
+            i++;
+        }
+    }
+    swap(&(*data)[i], &(*data)[hi]);
+    return i;
 };
+
+void quick_sort(const int lo, const int hi, DataVector* data)
+{
+    if (lo < hi)
+    {
+        const int pivot = partition(lo, hi, data);
+        quick_sort(lo, pivot - 1, data);
+        quick_sort(pivot + 1, hi, data);
+    }
+};
+
+void verify(const DataVector data)
+{
+    for (int i = 1; i < data.size(); ++i)
+    {
+        assert(data[i - 1] <= data[i]);
+    }
+}
+
+enum class SortingMethod
+{
+    MERGE,
+    BUBBLE,
+    INSERTION,
+    QUICK,
+};
+
+void run(SortingMethod method)
+{
+    auto print_duration = [&](const std::clock_t& start) { 
+        std::cout << "run time: "<< (std::clock() - start) / (double) CLOCKS_PER_SEC << std::endl;
+    };
+
+    std::clock_t start;
+    const int max_size = 40;
+    std::vector<int> data;
+    set_data(max_size, &data);
+    
+    start = std::clock();
+    switch (method)
+    {
+        case SortingMethod::MERGE:
+            merge_sort(&data);
+            print_data(data, "merge sort");
+            break;
+        case SortingMethod::BUBBLE:
+            bubble_sort(&data);
+            print_data(data, "bubble sort");
+            break;
+        case SortingMethod::INSERTION:
+            insertion_sort(&data);
+            print_data(data, "insertion sort");
+            break;
+        case SortingMethod::QUICK:
+            quick_sort(0, data.size() - 1, &data);
+            print_data(data, "quick sort");
+            break;
+    }
+    
+    print_duration(start);
+    verify(data);
+}
 
 int main()
 {
-    const int max_size = 20;
     std::srand(std::time(nullptr));
-    std::vector<int> data;
-
-    set_data(max_size, &data);
-    merge_sort(&data);
-    print(data, "merge sort");
-
-    set_data(max_size, &data);
-    bubble_sort(&data);
-    print(data, "bubble sort");
-
-    set_data(max_size, &data);
-    insertion_sort(&data);
-    print(data, "insertion sort");
-
-    set_data(max_size, &data);
-    quick_sort(&data);
-    print(data, "quick sort");
+    run(SortingMethod::MERGE);
+    run(SortingMethod::BUBBLE);
+    run(SortingMethod::INSERTION);
+    run(SortingMethod::QUICK);
 };
