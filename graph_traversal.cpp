@@ -6,6 +6,9 @@
 #include <limits>
 #include <cstdlib>
 #include <ctime>
+#include <queue>
+#include <stack>
+#include <set>
 
 class Node
 {
@@ -45,6 +48,12 @@ public:
 
 // Graph represented as a map of nodes
 typedef std::map<int, Node*> NodeMap;
+// Graph represented as a queue of nodes
+typedef std::queue<Node*> NodeQueue;
+// Graph represented as a stack of nodes
+typedef std::stack<Node*> NodeStack;
+// Graph represented as a map of nodes
+typedef std::set<int> NodeIdSet;
 // Path represented as an ordered list of nodes
 typedef std::vector<Node*> NodeVector;
 
@@ -154,7 +163,7 @@ public:
             }
             else if (it_path != path.end())
             {
-                std::cout << ".";
+                std::cout << "*";
             }
             else
             {
@@ -236,7 +245,7 @@ public:
             
             if (current->id_ == goal->id_)
             {
-                return reconstruct_path(current);
+                break;
             }
 
             open_set.erase(current->id_);
@@ -281,7 +290,7 @@ public:
             }
         }
 
-        return NodeVector();
+        return reconstruct_path(goal);
     };
 
     NodeVector dijkstra(Graph graph, Node* start, Node* goal)
@@ -343,6 +352,78 @@ public:
         return reconstruct_path(goal);
     };
 
+    NodeVector breadth_first_search(Node* start, Node* goal)
+    {
+        NodeQueue remaining_nodes;
+        NodeIdSet discovered_nodes;
+        remaining_nodes.push(start);
+        discovered_nodes.insert(start->id_);
+
+        came_from_.clear();
+        while (!remaining_nodes.empty())
+        {
+            Node* current = remaining_nodes.front();
+            remaining_nodes.pop();
+            if (current->id_ == goal->id_)
+            {
+                break;
+            }
+            for (Node* neighbor : current->neighbors_)
+            {
+                if (!neighbor->enabled_)
+                {
+                    continue;
+                }
+
+                auto it = discovered_nodes.find(neighbor->id_);
+                if (it == discovered_nodes.end())
+                {
+                    discovered_nodes.insert(neighbor->id_);
+                    came_from_[neighbor->id_] = current;
+                    remaining_nodes.push(neighbor);
+                }
+            }
+        }
+
+        return reconstruct_path(goal);
+    };
+
+    NodeVector depth_first_search(Node* start, Node* goal)
+    {
+        NodeStack remaining_nodes;
+        NodeIdSet discovered_nodes;
+        remaining_nodes.push(start);
+        discovered_nodes.insert(start->id_);
+
+        came_from_.clear();
+        while (!remaining_nodes.empty())
+        {
+            Node* current = remaining_nodes.top();
+            remaining_nodes.pop();
+            if (current->id_ == goal->id_)
+            {
+                break;
+            }
+            for (Node* neighbor : current->neighbors_)
+            {
+                if (!neighbor->enabled_)
+                {
+                    continue;
+                }
+
+                auto it = discovered_nodes.find(neighbor->id_);
+                if (it == discovered_nodes.end())
+                {
+                    discovered_nodes.insert(neighbor->id_);
+                    came_from_[neighbor->id_] = current;
+                    remaining_nodes.push(neighbor);
+                }
+            }
+        }
+
+        return reconstruct_path(goal);
+    };
+
     NodeMap came_from_;
 };
 
@@ -371,5 +452,15 @@ int main()
     std::cout << "=== Dijkstra ===" << std::endl;
     start = std::clock();
     graph.print(graph_solver.dijkstra(graph, start_node, goal_node));
+    print_duration(start);
+
+    std::cout << "===== BFS ======" << std::endl;
+    start = std::clock();
+    graph.print(graph_solver.breadth_first_search(start_node, goal_node));
+    print_duration(start);
+
+    std::cout << "===== DFS ======" << std::endl;
+    start = std::clock();
+    graph.print(graph_solver.depth_first_search(start_node, goal_node));
     print_duration(start);
 }
