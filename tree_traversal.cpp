@@ -134,6 +134,89 @@ public:
     size_t max_nodes_;
 };
 
+class BinarySearchTree()
+{
+public:
+    class Node ()
+    {
+    public:
+        Node()
+          : Node(-1) {};
+        Node(const int data)
+          : data_(data)
+          , left_(nullptr)
+          , right_(nullptr) {};
+        int data_;
+        Node* left_;
+        Node* right_;
+    };
+
+    BinarySearchTree()
+      : root_(nullptr) {};
+
+    void insert_key(const int data)
+    {
+        insert_key(data, root_);
+    };
+
+    void insert_key(const int data, Node* &root)
+    {
+        if (root == nullptr)
+        {
+            root = new Node(data);
+        }
+        else if (data < root->data_)
+        {
+            insert_key(data, root->left_);
+        }
+        else if (data > root->data_)
+        {
+            insert_key(data, root->right_);
+        }
+    };
+
+    void delete_key(const int data)
+    {
+        delete_key(const int data, nullptr, root_);
+    }
+
+    void find_min(Node* &parent, Node* &root)
+    {
+        while (root->left_ != nullptr)
+        {
+            parent = root;
+            root = root->left_;
+        }
+    }
+
+    void delete_key(const int data, Node* &parent, Node* &root)
+    {
+        if (root == nullptr)
+        {
+            return;
+        }
+        else if (data < root->data_)
+        {
+            delete_key(data, root, root->left_);
+        }
+        else if (data > root->data_)
+        {
+            delete_key(data, root, root->right_);
+        }
+        else if (root->left_ != nullptr && root->right_ != nullptr)
+        {
+            find_min(parent, root->right_);
+            delete_key(data, parent, root);
+        }
+        else if (root->left_ != nullptr)
+        {
+
+        }
+    }
+
+    Node* root_;
+};
+
 enum class KeyManipulation
 {
     INSERT,
