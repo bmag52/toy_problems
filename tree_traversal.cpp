@@ -134,22 +134,23 @@ public:
     size_t max_nodes_;
 };
 
-class BinarySearchTree()
+class Node
 {
 public:
-    class Node ()
-    {
-    public:
-        Node()
-          : Node(-1) {};
-        Node(const int data)
-          : data_(data)
-          , left_(nullptr)
-          , right_(nullptr) {};
-        int data_;
-        Node* left_;
-        Node* right_;
-    };
+    Node()
+      : Node(-1) {};
+    Node(const int data)
+      : data_(data)
+      , left_(nullptr)
+      , right_(nullptr) {};
+    int data_;
+    Node* left_;
+    Node* right_;
+};
+
+class BinarySearchTree
+{
+public:
 
     BinarySearchTree()
       : root_(nullptr) {};
@@ -177,16 +178,29 @@ public:
 
     void delete_key(const int data)
     {
-        delete_key(const int data, nullptr, root_);
-    }
+        delete_key(data, root_, root_);
+    };
 
-    void find_min(Node* &parent, Node* &root)
+    void find_min(Node* &root, Node* &root_parent)
     {
         while (root->left_ != nullptr)
         {
-            parent = root;
+            root_parent = root;
             root = root->left_;
         }
+    };
+
+    void replace_root(Node* root_replacement, Node* &parent, Node* &root)
+    {
+        if (root->data_ < parent->data_)
+        {
+            parent->left_ = root_replacement;
+        }
+        else
+        {
+            parent->right_ = root_replacement;
+        }
+        free(root);
     }
 
     void delete_key(const int data, Node* &parent, Node* &root)
@@ -205,14 +219,50 @@ public:
         }
         else if (root->left_ != nullptr && root->right_ != nullptr)
         {
-            find_min(parent, root->right_);
-            delete_key(data, parent, root);
-        }
-        else if (root->left_ != nullptr)
-        {
+            Node* successor = root->right_;
+            Node* successor_parent = root;
+            find_min(successor, successor_parent);
 
+            // fill the gap caused by moving the successor
+            successor_parent->left_ = successor->right_;
+
+            // give the successor the root leaves
+            successor->left_ = root->left_;
+            successor->right_ = root->right_;
+
+            // replace the root
+            replace_root(successor, parent, root);
+            
         }
+        else if (root->left_ == nullptr && root->right_ == nullptr)
+        {
+            replace_root(nullptr, parent, root);
+        }
+        else if (root->left_ == nullptr)
+        {
+            replace_root(root->right_, parent, root);
+        }
+        else if (root->right_ == nullptr)
+        {
+            replace_root(root->left_, parent, root);
+        }
+    };
+
+    void print()
+    {
+        print_in_order(root_);
+        std::cout << std::endl;
     }
+
+    void print_in_order(Node* root)
+    {
+        if (root != nullptr)
+        {
+            print_in_order(root->left_);
+            std::cout << root->data_ << " ";
+            print_in_order(root->right_);
+        }
+    };
 
     Node* root_;
 };
@@ -260,6 +310,19 @@ int main()
     std::srand(std::time(nullptr));
 
     BinaryMinHeap bmh(num_test_keys);
+    BinarySearchTree bst;
+
+    bst.insert_key(1);
+    bst.insert_key(2);
+    bst.insert_key(3);
+    bst.insert_key(4);
+    bst.print();
+
+    bst.delete_key(2);
+    bst.print();
+
+    bst.delete_key(3);
+    bst.print();
 
     // insert keys
     std::cout << "*** inserting: ";
