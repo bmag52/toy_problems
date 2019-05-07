@@ -143,6 +143,13 @@ public:
       : data_(data)
       , left_(nullptr)
       , right_(nullptr) {};
+    void print()
+    {
+        std::cout << data_ << " " <<
+            (left_ != nullptr ? left_->data_ : -1) << " " <<
+            (right_ != nullptr ? right_->data_ : -1) << " " <<
+            std::endl;
+    };
     int data_;
     Node* left_;
     Node* right_;
@@ -170,7 +177,7 @@ public:
         {
             insert_key(data, root->left_);
         }
-        else if (data > root->data_)
+        else if (data >= root->data_)
         {
             insert_key(data, root->right_);
         }
@@ -192,15 +199,24 @@ public:
 
     void replace_root(Node* root_replacement, Node* &parent, Node* &root)
     {
-        if (root->data_ < parent->data_)
+        if (parent == root)
+        {
+            // root is root
+            parent = root_replacement;
+        }
+        else if (parent->left_ && parent->left_->data_ == root->data_)
         {
             parent->left_ = root_replacement;
         }
-        else
+        else if (parent->right_ && parent->right_->data_ == root->data_)
         {
             parent->right_ = root_replacement;
         }
-        free(root);
+        else
+        {
+            std::cout << "parent is not connected to root" << std::endl;
+            return;
+        }
     }
 
     void delete_key(const int data, Node* &parent, Node* &root)
@@ -217,18 +233,24 @@ public:
         {
             delete_key(data, root, root->right_);
         }
+
+        // found the node, so delete it
+
         else if (root->left_ != nullptr && root->right_ != nullptr)
         {
             Node* successor = root->right_;
             Node* successor_parent = root;
             find_min(successor, successor_parent);
 
-            // fill the gap caused by moving the successor
-            successor_parent->left_ = successor->right_;
+            if (successor_parent != root)
+            {
+                // fill the gap caused by moving the successor
+                successor_parent->left_ = successor->right_;
+            }
 
-            // give the successor the root leaves
-            successor->left_ = root->left_;
-            successor->right_ = root->right_;
+            // give the successor the root leaves w/o cyclic pointers
+            successor->left_ = root->left_ == successor ? nullptr : root->left_;
+            successor->right_ = root->right_ == successor ? nullptr : root->right_;
 
             // replace the root
             replace_root(successor, parent, root);
@@ -248,8 +270,9 @@ public:
         }
     };
 
-    void print()
+    void print_in_order()
     {
+        std::cout << "tree contents: ";
         print_in_order(root_);
         std::cout << std::endl;
     }
@@ -312,17 +335,25 @@ int main()
     BinaryMinHeap bmh(num_test_keys);
     BinarySearchTree bst;
 
-    bst.insert_key(1);
-    bst.insert_key(2);
-    bst.insert_key(3);
-    bst.insert_key(4);
-    bst.print();
+    bst.insert_key(100);
+    bst.insert_key(50);
+    bst.insert_key(75);
+    bst.insert_key(25);
+    bst.insert_key(67);
+    bst.insert_key(89);
+    bst.insert_key(69);
+    bst.insert_key(68);
+    bst.insert_key(72);
+    bst.print_in_order();
 
-    bst.delete_key(2);
-    bst.print();
+    bst.delete_key(50);
+    bst.print_in_order();
 
-    bst.delete_key(3);
-    bst.print();
+    bst.delete_key(100);
+    bst.print_in_order();
+
+    bst.delete_key(75);
+    bst.print_in_order();
 
     // insert keys
     std::cout << "*** inserting: ";
