@@ -1,6 +1,7 @@
 #include <iostream>
 #include <limits>
 #include <vector>
+#include <string>
 
 // https://www.interviewcake.com/question/python/stock-price
 typedef std::vector<float> PriceVector;
@@ -48,8 +49,19 @@ void get_max_profit(const PriceVector stock_prices)
     std::cout << "max profit: " << max_profit << std::endl;
 }
 
+void string_manipulation()
+{
+    std::string test = "test";
+    for (size_t i = 0; i < test.length(); i++)
+    {
+        char letter = test[i];
+        std::cout << letter << std::endl;
+    }
+};
+
 int main()
 {
     std::srand(std::time(nullptr));
     get_max_profit(generate_stock_prices());
+    string_manipulation();  
 }

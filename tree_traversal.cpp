@@ -272,10 +272,10 @@ public:
 
     void print_in_order()
     {
-        std::cout << "tree contents: ";
+        std::cout << "tree contents in order: ";
         print_in_order(root_);
         std::cout << std::endl;
-    }
+    };
 
     void print_in_order(Node* root)
     {
@@ -286,6 +286,37 @@ public:
             print_in_order(root->right_);
         }
     };
+
+    void print_leaf_nodes()
+    {
+        std::cout << "tree leaves left to right: ";
+        print_leaf_nodes(root_);
+        std::cout << std::endl;
+    };
+
+    void print_leaf_nodes(Node* &root)
+    {
+        if (root == nullptr)
+        {
+            return;
+        }
+
+        if (root->left_ == nullptr && root->right_ == nullptr)
+        {
+            std::cout << root->data_ << " ";
+            return;
+        }
+
+        if (root->left_ != nullptr)
+        {
+            print_leaf_nodes(root->left_);
+        }
+
+        if (root->right_ != nullptr)
+        {
+            print_leaf_nodes(root->right_);
+        }
+    }
 
     Node* root_;
 };
@@ -345,6 +376,7 @@ int main()
     bst.insert_key(68);
     bst.insert_key(72);
     bst.print_in_order();
+    bst.print_leaf_nodes(); 
 
     bst.delete_key(50);
     bst.print_in_order();
