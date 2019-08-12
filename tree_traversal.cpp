@@ -270,6 +270,59 @@ public:
         }
     };
 
+    struct Link
+    {
+        int data_;
+        Link* next_;
+        Link* prev_;
+
+        Link(int data)
+          : data_(data)
+          , next_(nullptr)
+          , prev_(nullptr)
+        {
+        };
+    };
+
+    void to_dll()
+    {
+        Link* link = nullptr;
+        to_dll(link, root_);
+
+        // print from beginning
+        while(link != nullptr)
+        {
+            std::cout << link->data_ << ", ";
+            link = link->next_;
+        }
+        std::cout << std::endl;
+    }
+
+    void to_dll(Link* &link, Node* &root)
+    {
+        // base case
+        if (root == nullptr)
+        {
+            return;
+        }
+
+        // reversed in order traversal
+        to_dll(link, root->right_);
+
+        if (link == nullptr)
+        {
+            link = new Link(root->data_);
+        }
+        else
+        {
+            link->prev_ = new Link(root->data_);
+            link->prev_->next_ = link;
+            link = link->prev_;
+        }
+
+        to_dll(link, root->left_);
+    }
+
     void print_in_order()
     {
         std::cout << "tree contents in order: ";
@@ -386,6 +439,9 @@ int main()
 
     bst.delete_key(75);
     bst.print_in_order();
+
+    std::cout << "-- to dll --" << std::endl;
+    bst.to_dll();
 
     // insert keys
     std::cout << "*** inserting: ";
