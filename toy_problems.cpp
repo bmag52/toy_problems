@@ -241,6 +241,88 @@ void pythagorean_triplet(std::vector<int> vals)
     }
 }
 
+bool is_palindrome(int value)
+{
+    const size_t max_elements = 20;
+    int digits[max_elements];
+
+    size_t digit_count = 0;
+    while (value != 0)
+    {
+        digits[digit_count] = value % 10;
+        digit_count++;
+        value /= 10;
+    }
+
+    if (digit_count == 0)
+    {
+        return false;
+    }
+
+    for (size_t i = 0; i < digit_count; i++)
+    {
+        if (i >= digit_count - i - 1)
+        {
+            break;
+        }
+        if (digits[i] == digits[digit_count - i - 1])
+        {
+            continue;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+void print_pod_array(const int* array, const size_t size)
+{
+    for (size_t i = 0; i < size; i++)
+    {
+        std::cout << array[i] << " ";
+    }
+}
+
+void pod_array_manipulation()
+{
+    const size_t MAX_SIZE = 15;
+    const size_t MAX_ITERS = 100 * MAX_SIZE;
+
+    // create the container
+    int array[MAX_SIZE];
+
+    // FIFO buffer
+    size_t count = 0;
+    size_t size = 0;
+    for (size_t i = 0; i <= MAX_ITERS; i++)
+    {
+        if (size < MAX_SIZE)
+        {
+            // just add to the back
+            array[size] = count;
+            size++;
+        }
+        else
+        {
+            // shift left
+            for (size_t j = 1; j < MAX_SIZE; j++)
+            {
+                array[j - 1] = array[j];
+            }
+            array[MAX_SIZE - 1] = count;
+        }
+
+        // inc count
+        count++;
+
+        std::cout << i << ": ";
+        print_pod_array(array, size);
+        std::cout << std::endl;
+    }
+}
+
 int main()
 {
     std::srand(std::time(nullptr));
@@ -262,4 +344,11 @@ int main()
 
     std::vector<int> vals2 = {3, 4, 5, 6, 2, 4, 8, 10, 10, 15};
     pythagorean_triplet(vals2);
+
+    std::cout << is_palindrome(12321) << std::endl;
+    std::cout << is_palindrome(12320) << std::endl;
+    std::cout << is_palindrome(123321) << std::endl;
+    std::cout << is_palindrome(123421) << std::endl;
+
+    pod_array_manipulation();
 }
